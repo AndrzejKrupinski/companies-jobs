@@ -10,7 +10,7 @@ class CreateTableRequirements extends Migration
     {
         Schema::create('requirements', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name', 100)->index();
+            $table->string('title', 100)->index();
             $table->timestamps();
         });
     }

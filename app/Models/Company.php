@@ -8,17 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Company extends Model
 {
     /** @var string */
-    protected $name;
-
-    /** @var string */
     protected $table = 'companies';
 
+    /** @var array */
     protected $fillable = ['name',];
-
-    public function name(): string
-    {
-        return $this->name;
-    }
 
     public function requirements(): BelongsToMany
     {
