@@ -2,20 +2,20 @@
 
 namespace Tests\Feature;
 
-use App\Models\Requirement;
 use App\Repositories\CompanyRepository;
 use App\Repositories\RequirementRepository;
+use App\Services\JobFindService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class JobFindTest extends TestCase
 {
     use DatabaseMigrations;
+
+    /** @var JobFindService */
+    protected $jobFindService;
 
     /** @var CompanyRepository */
     protected $companyRepository;
@@ -27,6 +27,7 @@ class JobFindTest extends TestCase
     {
         parent::setUp();
 
+        $this->jobFindService = $this->app->make(JobFindService::class);
         $this->companyRepository = $this->app->make(CompanyRepository::class);
         $this->requirementRepository = $this->app->make(RequirementRepository::class);
     }
@@ -36,9 +37,8 @@ class JobFindTest extends TestCase
      */
     public function willGetRequirements(): void
     {
-        $testRequirementTitle = 'TestRequirement';
+        $testRequirementTitle = $this->getTestCompanyDataTitle();
         $requirement = $this->requirementRepository->save(['title' => $testRequirementTitle]);
-        Cache::add('testRequirementId', $requirement->getKey(), 1);
 
         $response = $this->post('requirements', ['queryString' => $testRequirementTitle]);
 
@@ -51,27 +51,38 @@ class JobFindTest extends TestCase
      */
     public function willGetCompanies(): void
     {
-        $testCompanyName = 'TestCompany';
-        $company = $this->companyRepository->save(['name' => $testCompanyName]);
-        $testRequirementId = Cache::get('testRequirementId', '1');
+        $testRequirementTitle = $this->getTestRequirementDataTitle();
+        $company = $this->companyRepository->save(['name' => $this->getTestCompanyDataTitle()]);
+        $requirement = $this->requirementRepository->save(['title' => $testRequirementTitle]);
+        $requirementId = $requirement->getKey();
         DB::table('company_requirements')
             ->insert([
                 'company_id' => $company->getKey(),
-                'requirement_id' => $testRequirementId,
+                'requirement_id' => $requirementId,
                 'created_at' => Carbon::now(),
             ]);
-        Cache::forget('testRequirementId');
-        $company->fresh();
 
-        $response = $this->post('companies', ['requirements' => [$testRequirementId]]);
+        $response = $this->post('companies', ['requirements' => [$requirementId]]);
 
         $response->assertStatus(200);
-dd($this->getResponseData($response, 'companies'));
-        // $response->assertJson([$requirement->toArray()]);
+        $this->assertSame(
+            $this->getResponseData($response, 'companies'),
+            $this->jobFindService->processCompanyResults([$company])
+        );
     }
 
     protected function getResponseData($response, $key)
     {
         return $response->getOriginalContent()->getData()[$key];
+    }
+
+    protected function getTestCompanyDataTitle(): string
+    {
+        return 'TestCompany';
+    }
+
+    protected function getTestRequirementDataTitle(): string
+    {
+        return 'TestRequirement';
     }
 }

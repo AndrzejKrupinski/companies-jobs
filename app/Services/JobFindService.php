@@ -43,7 +43,7 @@ class JobFindService
         return $this->findMatchingTheRequirements($companiesToCheck, $requirementIds);
     }
 
-    protected function processCompanyResults(array $companies): array
+    public function processCompanyResults(array $companies): array
     {
         $processedCompanies = [];
 
