@@ -14,21 +14,21 @@ class CompanyRepository extends Repository
 
     public function findByRequirementIds(array $requirementIds): array
     {
-        $companyRequirements = DB::table('company_requirements')
+        $conditionRequirements = DB::table('condition_requirements')
+            ->join('conditions', 'condition_requirements.condition_id', '=', 'conditions.id')
             ->whereIn('requirement_id', $requirementIds)
             ->get()
             ->all();
-
-        $companyIds = $this->getCompanyIds($companyRequirements);
+        $companyIds = $this->getCompanyIds($conditionRequirements);
 
         return $this->model::find($companyIds)->all();
     }
 
-    protected function getCompanyIds(array $companyRequirements): array
+    protected function getCompanyIds(array $conditionRequirements): array
     {
         $companyIds = [];
 
-        foreach ($companyRequirements as $companyRequirement) {
+        foreach ($conditionRequirements as $companyRequirement) {
             $companyIds[] = $companyRequirement->company_id;
         }
 

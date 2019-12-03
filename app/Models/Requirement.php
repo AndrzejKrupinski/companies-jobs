@@ -12,8 +12,13 @@ class Requirement extends Model
 
     protected $fillable = ['title',];
 
-    public function companies(): BelongsToMany
+    public function id(): int
     {
-        return $this->belongsToMany(Company::class, 'company_requirements', 'requirement_id', 'company_id');
+        return $this->getKey();
+    }
+
+    public function conditions(): BelongsToMany
+    {
+        return $this->belongsToMany(Condition::class, 'condition_requirements', 'requirement_id', 'condition_id');
     }
 }

@@ -1,5 +1,6 @@
 ### JOB FINDER
 
 #### Things to do:
-- There's one feature missing: combinations of requirements (logical alternatives 'v');
-- Use joins in repositories.
+- update tests;
+- get rid of mass-assignment;
+- make requirements unique per company in ConditionRequirementsPivotSeeder.

@@ -12,6 +12,7 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^6.2",
         "laravel/tinker": "^1.0",
+        "mad-web/laravel-enum": "^1.6",
         "myclabs/php-enum": "^1.7"
     },
     "require-dev": {

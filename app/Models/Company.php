@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
 {
@@ -13,8 +13,13 @@ class Company extends Model
     /** @var array */
     protected $fillable = ['name',];
 
-    public function requirements(): BelongsToMany
+    public function id(): int
     {
-        return $this->belongsToMany(Requirement::class, 'company_requirements', 'company_id', 'requirement_id');
+        return $this->getKey();
+    }
+
+    public function conditions(): HasMany
+    {
+        return $this->hasMany(Condition::class);
     }
 }

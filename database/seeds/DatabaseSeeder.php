@@ -8,6 +8,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(CompanySeeder::class);
         $this->call(RequirementSeeder::class);
-        $this->call(CompanyRequirementsPivotSeeder::class);
+        $this->call(ConditionSeeder::class);
+        $this->call(ConditionRequirementsPivotSeeder::class);
     }
 }
