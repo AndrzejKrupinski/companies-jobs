@@ -77,7 +77,7 @@
             placeholder: "Start typing",
             minimumInputLength: 2,
             ajax: {
-                url: '/requirements',
+                url: '/requirement',
                 type: 'post',
                 delay: 250,
                 dataType: 'json',

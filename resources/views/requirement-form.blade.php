@@ -7,10 +7,11 @@
                 {{ config('app.name') }}
             </div>
             <div>
-                <form action="{{ route('companies') }}" method="POST">
+                <form action="{{ route('company.show') }}" method="POST">
                     @csrf
                     <div class="form-group">
-                        <label for="requirements">Please specify your qualifications to find job that suits you:</label><br>
+                        <label for="requirements">Please specify your qualifications to find job that suits you:</label>
+                        <br>
                         <select id="requirements" name="requirements[]" class="form-control" multiple style="width: 300px;">
                         </select>
                     </div>
