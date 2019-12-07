@@ -18,6 +18,17 @@ class Company extends Model
         return $this->getKey();
     }
 
+    public function isMatchingRequirements(array $requirementIds): bool
+    {
+        foreach ($this->conditions as $condition) {
+            if (!$condition->isMatchingRequirements($requirementIds)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function conditions(): HasMany
     {
         return $this->hasMany(Condition::class);

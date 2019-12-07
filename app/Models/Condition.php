@@ -36,4 +36,22 @@ class Condition extends Model
     {
         return $this->belongsToMany(Requirement::class, 'condition_requirements', 'condition_id', 'requirement_id');
     }
+
+    public function isMatchingRequirements(array $requirementIds): bool
+    {
+        $conditionRequirements = $this->requirements()->get();
+        $conditionRequirementsIds = $conditionRequirements->pluck('id')->toArray();
+
+        if ($this->type->is(Type::ALTERNATIVE())) {
+            if (!\array_intersect($conditionRequirementsIds, $requirementIds)) {
+                return false;
+            }
+        } else {
+            if (!\in_array($conditionRequirements[0]->id(), $requirementIds)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
