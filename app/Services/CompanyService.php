@@ -7,7 +7,8 @@ use App\Models\Company;
 use App\Models\Condition;
 use App\Repositories\CompanyRepository;
 use App\Repositories\RequirementRepository;
-use Illuminate\Support\Collection;
+use App\ValueObjects\CompanyConditions;
+use App\ValueObjects\ConditionRequirements;
 
 class CompanyService
 {
@@ -72,68 +73,105 @@ class CompanyService
 
         foreach ($companiesToCheck as $companyToCheck) {
             $positiveVerifiedCompanies = $this->checkConditionsForCompany(
-                $companyToCheck->conditions()->get(),
+                CompanyConditions::fromArray([
+                    $companyToCheck->name,
+                    $companyToCheck->conditions()->get(),
+                ]),
                 $requirementIds,
-                $positiveVerifiedCompanies,
-                $companyToCheck->name
+                $positiveVerifiedCompanies
             );
         }
 
         return $positiveVerifiedCompanies;
     }
 
-    // @todo - simplify/split this method (there is code doubled):
     protected function checkConditionsForCompany(
-        Collection $conditionsOfCompanyToCheck,
+        CompanyConditions $companyConditions,
         array $requirementIds,
-        array &$positiveVerifiedCompanies,
-        string $companyToCheckName
+        array &$positiveVerifiedCompanies
     ): array {
         $requirementsPerCompany = [];
+        $conditionsOfCompanyToCheck = $companyConditions->conditionsOfCompanyToCheck();
 
         foreach ($conditionsOfCompanyToCheck as $index => $condition) {
             $conditionRequirements = $condition->requirements()->get()->pluck('id')->toArray();
+            $verifiedConditionsAndRequirements = $this->verifyConditionByType(
+                $companyConditions,
+                ConditionRequirements::fromArray([
+                    $index,
+                    $conditionRequirements,
+                    $requirementsPerCompany,
+                    $condition,
+                ]),
+                $positiveVerifiedCompanies,
+                $requirementIds,
+                (int) $index
+            );
 
-            if ($condition->type->is(Type::ALTERNATIVE())) {
-                if (!\array_intersect($conditionRequirements, $requirementIds)) {
-                    break;
-                } else {
-                    $requirementsPerCompany = $this->addRequirementPerCompany(
-                        $requirementsPerCompany,
-                        $conditionRequirements,
-                        $condition
-                    );
-
-                    $positiveVerifiedCompanies = $this->addPossitiveVerifiedCompany(
-                        $positiveVerifiedCompanies,
-                        $conditionsOfCompanyToCheck,
-                        $requirementsPerCompany,
-                        $companyToCheckName,
-                        (int) $index
-                    );
-                }
+            if (!$verifiedConditionsAndRequirements) {
+                break;
             } else {
-                if (!\in_array($condition->requirements()->get()[0]->id(), $requirementIds)) {
-                    break;
-                } else {
-                    $requirementsPerCompany = $this->addRequirementPerCompany(
-                        $requirementsPerCompany,
-                        $conditionRequirements,
-                        $condition
-                    );
-
-                    $positiveVerifiedCompanies = $this->addPossitiveVerifiedCompany(
-                        $positiveVerifiedCompanies,
-                        $conditionsOfCompanyToCheck,
-                        $requirementsPerCompany,
-                        $companyToCheckName,
-                        (int) $index
-                    );
-                }
+                [$requirementsPerCompany, $positiveVerifiedCompanies] = $verifiedConditionsAndRequirements;
             }
         }
-
+dd($positiveVerifiedCompanies);
         return $positiveVerifiedCompanies;
+    }
+
+    protected function verifyConditionByType(
+        CompanyConditions $companyConditions,
+        ConditionRequirements $conditionRequirements,
+        array $positiveVerifiedCompanies,
+        array $requirementIds
+    ): array {
+        $condition = $conditionRequirements->condition();
+        $requirementsOfConditions = $conditionRequirements->requirementsOfCondition();
+
+        if ($condition->type->is(Type::ALTERNATIVE())) {
+            [$requirementsPerCompany, $positiveVerifiedCompanies] = $this->checkCompletenessOfCondition(
+                $companyConditions,
+                $conditionRequirements,
+                !\array_intersect($requirementsOfConditions, $requirementIds),
+                $positiveVerifiedCompanies
+            );
+        } else {
+            [$requirementsPerCompany, $positiveVerifiedCompanies] = $this->checkCompletenessOfCondition(
+                $companyConditions,
+                $conditionRequirements,
+                !\in_array($condition->requirements()->get()[0]->id(), $requirementIds),
+                $positiveVerifiedCompanies
+            );
+        }
+
+        return [$requirementsPerCompany, $positiveVerifiedCompanies,];
+    }
+
+    protected function checkCompletenessOfCondition(
+        CompanyConditions $companyConditions,
+        ConditionRequirements $conditionRequirements,
+        bool $statement,
+        array $positiveVerifiedCompanies
+    ): array {
+        $requirementsPerCompany = $conditionRequirements->requirementsPerCompany();
+
+        if ($statement) {
+            return [$requirementsPerCompany, $positiveVerifiedCompanies,];
+        } else {
+            $requirementsPerCompany = $this->addRequirementPerCompany(
+                $requirementsPerCompany,
+                $conditionRequirements->requirementsOfCondition(),
+                $conditionRequirements->condition()
+            );
+
+            $positiveVerifiedCompanies = $this->addPositiveVerifiedCompany(
+                $companyConditions,
+                $positiveVerifiedCompanies,
+                $requirementsPerCompany,
+                $conditionRequirements->index()
+            );
+        }
+
+        return [$requirementsPerCompany, $positiveVerifiedCompanies,];
     }
 
     protected function addRequirementPerCompany(
@@ -147,13 +185,15 @@ class CompanyService
         return $requirementsPerCompany;
     }
 
-    protected function addPossitiveVerifiedCompany(
+    protected function addPositiveVerifiedCompany(
+        CompanyConditions $companyConditions,
         array &$positiveVerifiedCompanies,
-        Collection $conditionsOfCompanyToCheck,
         array $requirementsPerCompany,
-        string $companyToCheckName,
         int $index
     ): array {
+        $conditionsOfCompanyToCheck = $companyConditions->conditionsOfCompanyToCheck();
+        $companyToCheckName = $companyConditions->companyToCheckName();
+
         if ($index === \count($conditionsOfCompanyToCheck) - 1) {
             $positiveVerifiedCompanies[$companyToCheckName] = $requirementsPerCompany;
         }
