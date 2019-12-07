@@ -13,8 +13,8 @@ class ConditionRequirementsPivotSeeder extends Seeder
     /** @var int */
     protected const MAXIMUM_REQUIREMENTS_FOR_ONE_ALTERNATIVE = 3;
 
-/** @var array */
-protected $requirementsPerCompanies;
+    /** @var array */
+    protected $requirementsPerCompanies;
 
     public function run(ConditionRepository $conditionRepository, RequirementRepository $requirementRepository): void
     {
@@ -28,7 +28,7 @@ protected $requirementsPerCompanies;
             $requirementIds = $this->getRandomRequirementIds(
                 \count($requirements),
                 $requirementsAmountForCondition,
-$condition->company_id
+                $condition->company_id
             );
 
             foreach ($requirementIds as $requirementId) {
@@ -51,7 +51,7 @@ $condition->company_id
     private function getRandomRequirementIds(
         int $requirementsAmount,
         int $requirementsAmountForCondition,
-int $companyId
+        int $companyId
     ): array {
         $requirementIds = [];
 
@@ -59,23 +59,23 @@ int $companyId
             $randomNumber = \rand(1, $requirementsAmount);
 
             if (!\in_array($randomNumber, $requirementIds)
-&& !\in_array($randomNumber, $this->requirementsPerCompanies[$companyId])) {
+                && !\in_array($randomNumber, $this->requirementsPerCompanies[$companyId])) {
                 $requirementIds[] = $randomNumber;
-$this->updateRequirementsPerCompanies($companyId, $randomNumber);
+                $this->updateRequirementsPerCompanies($companyId, $randomNumber);
             }
         }
 
         return $requirementIds;
     }
 
-private function updateRequirementsPerCompanies(int $companyId, int $randomNumber): void
-{
-    if (isset($this->requirementsPerCompanies[$companyId])) {
-        $this->requirementsPerCompanies[$companyId][] = $randomNumber;
-    } else {
-        $this->requirementsPerCompanies[$companyId] = [$randomNumber];
+    private function updateRequirementsPerCompanies(int $companyId, int $randomNumber): void
+    {
+        if (isset($this->requirementsPerCompanies[$companyId])) {
+            $this->requirementsPerCompanies[$companyId][] = $randomNumber;
+        } else {
+            $this->requirementsPerCompanies[$companyId] = [$randomNumber];
+        }
     }
-}
 
     private function insertRecord(int $requirementId, int $id): void
     {

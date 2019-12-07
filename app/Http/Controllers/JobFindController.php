@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\JobFindService;
+use App\Services\CompanyService;
+use App\Services\RequirementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,12 +16,16 @@ class JobFindController extends Controller
     /** @var string */
     protected const VALIDATION_RULES_REQUIREMENT = 'string';
 
-    /** @var JobFindService */
-    protected $service;
+    /** @var CompanyService */
+    protected $companyService;
 
-    public function __construct(JobFindService $jobFindService)
+    /** @var RequirementService */
+    protected $requirementService;
+
+    public function __construct(CompanyService $companyService, RequirementService $requirementService)
     {
-        $this->service = $jobFindService;
+        $this->companyService = $companyService;
+        $this->requirementService = $requirementService;
     }
 
     public function companies(Request $request): View
@@ -28,7 +33,7 @@ class JobFindController extends Controller
         $this->validate($request, ['requirements' => self::VALIDATION_RULES_COMPANY]);
 
         return view('company-list', [
-            'companies' => $this->service->companies($request->get('requirements')),
+            'companies' => $this->companyService->companies($request->get('requirements')),
         ]);
     }
 
@@ -36,6 +41,6 @@ class JobFindController extends Controller
     {
         $this->validate($request, ['queryString' => self::VALIDATION_RULES_REQUIREMENT]);
 
-        return response()->json($this->service->requirements($request->get('queryString')));
+        return response()->json($this->requirementService->requirements($request->get('queryString')));
     }
 }

@@ -9,7 +9,7 @@ use App\Repositories\CompanyRepository;
 use App\Repositories\RequirementRepository;
 use Illuminate\Support\Collection;
 
-class JobFindService
+class CompanyService
 {
     /** @var CompanyRepository */
     protected $companyRepository;
@@ -32,11 +32,6 @@ class JobFindService
         }
 
         return $companies;
-    }
-
-    public function requirements(string $queryString = ''): array
-    {
-        return $this->requirementRepository->findByName($queryString);
     }
 
     public function processCompanyResults(array $companies): array
@@ -87,6 +82,7 @@ class JobFindService
         return $positiveVerifiedCompanies;
     }
 
+    // @todo - simplify/split this method (there is code doubled):
     protected function checkConditionsForCompany(
         Collection $conditionsOfCompanyToCheck,
         array $requirementIds,
@@ -113,7 +109,7 @@ class JobFindService
                         $conditionsOfCompanyToCheck,
                         $requirementsPerCompany,
                         $companyToCheckName,
-                        $index
+                        (int) $index
                     );
                 }
             } else {
@@ -131,7 +127,7 @@ class JobFindService
                         $conditionsOfCompanyToCheck,
                         $requirementsPerCompany,
                         $companyToCheckName,
-                        $index
+                        (int) $index
                     );
                 }
             }
