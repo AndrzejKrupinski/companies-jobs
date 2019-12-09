@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Company;
 use App\Repositories\CompanyRepository;
 use App\Repositories\RequirementRepository;
 
@@ -36,7 +35,7 @@ class CompanyService
         $processedCompanies = [];
 
         foreach ($companies as $company) {
-            $processedCompanies[$company->name] = $this->processRequirementResults($company);
+            $processedCompanies[$company->name] = $company->preparedRequirements();
         }
 
         return $processedCompanies;
@@ -47,19 +46,6 @@ class CompanyService
         $companiesToCheck = $this->companyRepository->findByRequirementIds($requirementIds);
 
         return $this->findCompaniesMatchingTheRequirements($companiesToCheck, $requirementIds);
-    }
-
-    protected function processRequirementResults(Company $company): array
-    {
-        $requirements = [];
-
-        foreach ($company->conditions()->get() as $condition) {
-            foreach ($condition->requirements()->get() as $requirement) {
-                $requirements[$condition->id()][] = $requirement->title;
-            }
-        }
-
-        return $requirements;
     }
 
     protected function findCompaniesMatchingTheRequirements(array $companiesToCheck, array $requirementIds): array

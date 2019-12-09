@@ -29,6 +29,17 @@ class Company extends Model
         return true;
     }
 
+    public function preparedRequirements(): array
+    {
+        $requirements = [];
+
+        foreach ($this->conditions()->get() as $condition) {
+            $requirements[$condition->id()] = $condition->preparedRequirements();
+        }
+
+        return $requirements;
+    }
+
     public function conditions(): HasMany
     {
         return $this->hasMany(Condition::class);

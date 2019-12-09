@@ -27,16 +27,6 @@ class Condition extends Model
         return $this->getKey();
     }
 
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
-    }
-
-    public function requirements(): BelongsToMany
-    {
-        return $this->belongsToMany(Requirement::class, 'condition_requirements', 'condition_id', 'requirement_id');
-    }
-
     public function isMatchingRequirements(array $requirementIds): bool
     {
         $conditionRequirements = $this->requirements()->get();
@@ -53,5 +43,26 @@ class Condition extends Model
         }
 
         return true;
+    }
+
+    public function preparedRequirements(): array
+    {
+        $requirements = [];
+
+        foreach ($this->requirements()->get() as $requirement) {
+            $requirements[] = $requirement->title;
+        }
+
+        return $requirements;
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function requirements(): BelongsToMany
+    {
+        return $this->belongsToMany(Requirement::class, 'condition_requirements', 'condition_id', 'requirement_id');
     }
 }
