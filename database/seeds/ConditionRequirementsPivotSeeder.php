@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-use App\Condition\Enums\Type;
+use App\Enums\Condition\Type;
 use App\Models\Condition;
 use App\Repositories\ConditionRepository;
 use App\Repositories\RequirementRepository;

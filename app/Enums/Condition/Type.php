@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace App\Condition\Enums;
+namespace App\Enums\Condition;
 
 use MadWeb\Enum\Enum;
 

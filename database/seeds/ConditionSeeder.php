@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-use App\Condition\Enums\Type;
+use App\Enums\Condition\Type;
 use App\Repositories\CompanyRepository;
 use App\Repositories\ConditionRepository;
 use Illuminate\Database\Seeder;
