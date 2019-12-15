@@ -6,5 +6,5 @@ use App\Models\Requirement;
 use Faker\Generator as Faker;
 
 $factory->define(Requirement::class, function (Faker $faker) {
-    return ['title' => \ucfirst($faker->word()),];
+    return ['title' => \ucfirst($faker->word() . '-' . $faker->word()),];
 });
