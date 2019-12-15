@@ -25,6 +25,7 @@ class ConditionRequirementsPivotSeeder extends Seeder
     {
         foreach ($conditions as $condition) {
             $requirementsAmountForCondition = $this->getNumberOfRequirementsForCondition($condition);
+
             $requirementIds = $this->getRandomRequirementIds(
                 \count($requirements),
                 $requirementsAmountForCondition,
@@ -56,21 +57,50 @@ class ConditionRequirementsPivotSeeder extends Seeder
         $requirementIds = [];
 
         for ($i = 1; $i <= $requirementsAmountForCondition; $i++) {
-            $randomNumber = \rand(1, $requirementsAmount);
-
-            if (!\in_array($randomNumber, $requirementIds)
-                && !\in_array($randomNumber, $this->requirementsPerCompanies[$companyId])) {
-                $requirementIds[] = $randomNumber;
-                $this->updateRequirementsPerCompanies($companyId, $randomNumber);
-            }
+            $requirementIds = $this->getRandomNumberForCompany(
+                $requirementsAmount,
+                $requirementsAmountForCondition,
+                $companyId,
+                $requirementIds
+            );
         }
 
         return $requirementIds;
     }
 
-    private function updateRequirementsPerCompanies(int $companyId, int $randomNumber): void
-    {
-        if (isset($this->requirementsPerCompanies[$companyId])) {
+    private function getRandomNumberForCompany(
+        int $requirementsAmount,
+        int $requirementsAmountForCondition,
+        int $companyId,
+        array $requirementIds
+    ): array {
+        $randomNumber = $this->generateRandomNumber($requirementsAmount);
+        $presenceInRequirementsPerCompanies = isset($this->requirementsPerCompanies[$companyId]);
+        $randomNumberIsNotUsedForCompany = !$presenceInRequirementsPerCompanies
+            || ($presenceInRequirementsPerCompanies
+            && !\in_array($randomNumber, $this->requirementsPerCompanies[$companyId]));
+
+        if ($randomNumberIsNotUsedForCompany) {
+            $requirementIds[] = $randomNumber;
+            $this->updateRequirementsPerCompanies($presenceInRequirementsPerCompanies, $companyId, $randomNumber);
+        } else {
+            $requirementIds = $this->getRandomNumberForCompany(
+                $requirementsAmount,
+                $requirementsAmountForCondition,
+                $companyId,
+                $requirementIds
+            );
+        }
+
+        return $requirementIds;
+    }
+
+    private function updateRequirementsPerCompanies(
+        bool $presenceInRequirementsPerCompanies,
+        int $companyId,
+        int $randomNumber
+    ): void {
+        if ($presenceInRequirementsPerCompanies) {
             $this->requirementsPerCompanies[$companyId][] = $randomNumber;
         } else {
             $this->requirementsPerCompanies[$companyId] = [$randomNumber];
@@ -83,5 +113,10 @@ class ConditionRequirementsPivotSeeder extends Seeder
             'INSERT INTO condition_requirements (requirement_id, condition_id) VALUES (?, ?)',
             [$requirementId, $id]
         );
+    }
+
+    private function generateRandomNumber(int $requirementsAmount): int
+    {
+        return \rand(1, $requirementsAmount);
     }
 }
